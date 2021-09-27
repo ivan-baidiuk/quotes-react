@@ -11,64 +11,58 @@ function Form({ updateData }) {
   const [filteredQuotes, setFilteredQuotes] = useState(quotes)
   let history = useHistory();
 
-  useEffect(()=>{
+  useEffect(()=> {
     const savedValue = sessionStorage.getItem('filteredValue');
     if(savedValue) {
       searchItem(savedValue);
     }
-  }, [])
+  })
 
-  function setNameSorting () {
-    if (nameSort === SORT_BUTTON_STATE.DEFAULT) {
-      const upQuotes = [...quotes];
-      setNameSort(SORT_BUTTON_STATE.UP);
-      upQuotes.sort((prev, next) => {
-        const nextLover = next.name.toLowerCase()
-        const prevLover = prev.name.toLowerCase()
-        return prevLover.localeCompare(nextLover);
-      });
-      updateData(upQuotes);
-    }
-    if (nameSort === SORT_BUTTON_STATE.UP) {
-      const downQuotes = [...quotes];
-      setNameSort(SORT_BUTTON_STATE.DOWN)
-      downQuotes.sort((prev, next) => {
-        const nextLover = next.name.toLowerCase()
-        const prevLover = prev.name.toLowerCase()
-        return nextLover.localeCompare(prevLover);
-      });
-      updateData(downQuotes);
-    }
-    if (nameSort === SORT_BUTTON_STATE.DOWN) {
-      setNameSort(SORT_BUTTON_STATE.DEFAULT)
-      updateData(quotes);
-    }
-  }
+  function setSorting (e) {
+    let sortBy = e.target.dataset.sort;
+    console.log(sortBy)
+    let sortingCase = sortBy === 'name' ? nameSort : textSort
+    switch(sortingCase) {
+      case SORT_BUTTON_STATE.DEFAULT:
+        const upQuotes = [...quotes];
+        if (sortBy === 'name') {
+          setNameSort(SORT_BUTTON_STATE.UP);
+        } else {
+          setTextSort(SORT_BUTTON_STATE.UP);
+        }
+        upQuotes.sort((prev, next) => {
+          const nextLover = next[sortBy].toLowerCase()
+          const prevLover = prev[sortBy].toLowerCase()
+          return prevLover.localeCompare(nextLover);
+        });
+        updateData(upQuotes);
+        break
 
-  function setTextSorting () {
-    if (textSort === SORT_BUTTON_STATE.DEFAULT) {
-      const upQuotes = [...quotes];
-      setTextSort(SORT_BUTTON_STATE.UP);
-      upQuotes.sort((prev, next) => {
-        const nextLover = next.quote.toLowerCase()
-        const prevLover = prev.quote.toLowerCase()
-        return prevLover.localeCompare(nextLover);
-      });
-      updateData(upQuotes);
-    }
-    if (textSort === SORT_BUTTON_STATE.UP) {
-      const downQuotes = [...quotes];
-      setTextSort(SORT_BUTTON_STATE.DOWN)
-      downQuotes.sort((prev, next) => {
-        const nextLover = next.quote.toLowerCase()
-        const prevLover = prev.quote.toLowerCase()
-        return nextLover.localeCompare(prevLover);
-      });
-      updateData(downQuotes);
-    }
-    if (textSort === SORT_BUTTON_STATE.DOWN) {
-      setTextSort(SORT_BUTTON_STATE.DEFAULT)
-      updateData(quotes);
+      case SORT_BUTTON_STATE.UP:
+        const downQuotes = [...quotes];
+        if (sortBy === 'name') {
+          setNameSort(SORT_BUTTON_STATE.DOWN);
+        } else {
+          setTextSort(SORT_BUTTON_STATE.DOWN);
+        }
+        downQuotes.sort((prev, next) => {
+          const nextLover = next[sortBy].toLowerCase()
+          const prevLover = prev[sortBy].toLowerCase()
+          return nextLover.localeCompare(prevLover);
+        });
+        updateData(downQuotes);
+        break
+
+      case SORT_BUTTON_STATE.DOWN:
+        if (sortBy === 'name') {
+          setNameSort(SORT_BUTTON_STATE.DEFAULT);
+        } else {
+          setTextSort(SORT_BUTTON_STATE.DEFAULT);
+        }
+        updateData(quotes);
+        break
+      default:
+        break
     }
   }
 
@@ -88,14 +82,14 @@ function Form({ updateData }) {
     sessionStorage.setItem('filteredValue', value);
   }
 
-  function randomInteger(min, max) {
-    let rand = min - 0.5 + Math.random() * (max - min + 1);
-    return Math.round(rand);
-  }
-
   function getRandomQuote () {
     const quoteIndex = randomInteger(0, filteredQuotes.length);
     const quoteItem = filteredQuotes[quoteIndex];
+
+    function randomInteger(min, max) {
+      let rand = min - 0.5 + Math.random() * (max - min + 1);
+      return Math.round(rand);
+    }
 
     history.push({
       pathname: "/quote",
@@ -108,19 +102,6 @@ function Form({ updateData }) {
 
   return (
     <div className="form">
-      <button className="name" onClick={setNameSorting}>
-        Sort by Name
-        {nameSort === SORT_BUTTON_STATE.UP && <span className=" arrow up">&#x2191;</span>}
-        {nameSort === SORT_BUTTON_STATE.DOWN && <span className="down">&#x2193;</span>}
-      </button>
-      <button className="text" onClick={setTextSorting}>
-        Sort by Text
-        {textSort === SORT_BUTTON_STATE.UP && <span className=" arrow up">&#x2191;</span>}
-        {textSort === SORT_BUTTON_STATE.DOWN && <span className="down">&#x2193;</span>}
-      </button>
-      <button className="random" onClick={getRandomQuote}>
-        Random
-      </button>
       <form>
         <input
           type="search"
@@ -129,6 +110,19 @@ function Form({ updateData }) {
           value={inputValue}
         />
       </form>
+      <button className="name" data-sort="name" onClick={setSorting}>
+        Sort by Name
+        {nameSort === SORT_BUTTON_STATE.UP && <span className=" arrow up">&#x2191;</span>}
+        {nameSort === SORT_BUTTON_STATE.DOWN && <span className="down">&#x2193;</span>}
+      </button>
+      <button className="text" data-sort="quote" onClick={setSorting}>
+        Sort by Text
+        {textSort === SORT_BUTTON_STATE.UP && <span className=" arrow up">&#x2191;</span>}
+        {textSort === SORT_BUTTON_STATE.DOWN && <span className="down">&#x2193;</span>}
+      </button>
+      <button className="random" onClick={getRandomQuote}>
+        Random
+      </button>
     </div>
   );
 }
